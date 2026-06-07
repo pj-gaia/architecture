@@ -1,0 +1,117 @@
+name: Release and Deploy
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build Documentation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build HTML
+        uses: asciidoctor/asciidoctor-action@v2
+        with:
+          source_dir: .
+          source_file: index.adoc
+          destination_dir: ./build/html
+          backend: html5
+          safe: unsafe
+          attributes: |
+            imagesdir=./images
+            kroki-fetch-diagram=true
+            kroki-server-url=https://kroki.io
+
+      - name: Build PDF
+        uses: asciidoctor/asciidoctor-action@v2
+        with:
+          source_dir: .
+          source_file: index.adoc
+          destination_dir: ./build/pdf
+          backend: pdf
+          safe: unsafe
+          attributes: |
+            imagesdir=./images
+            kroki-fetch-diagram=true
+            kroki-server-url=https://kroki.io
+
+      - name: Upload HTML artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: html-artifact
+          path: build/html
+
+      - name: Upload PDF artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: pdf-artifact
+          path: build/pdf/index.pdf
+
+  release:
+    name: Create GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "lts/*"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Download PDF artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: pdf-artifact
+
+      - name: Rename PDF
+        run: mv index.pdf documentation.pdf
+
+      - name: Semantic Release
+        run: npx semantic-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Download HTML artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: html-artifact
+          path: ./
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
