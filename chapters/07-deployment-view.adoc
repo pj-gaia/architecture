@@ -1,0 +1,138 @@
+[[section-deployment-view]]
+= Deployment View
+
+The deployment view describes the technical infrastructure used to execute the system, and maps building blocks onto that infrastructure.
+
+NOTE: Add an infrastructure / deployment diagram here (e.g., C4 Deployment diagram or UML deployment diagram). Place the diagram file in `images/`.
+
+== Infrastructure Level 1: Kubernetes Cluster
+
+All Project Gaia components are deployed on a Kubernetes cluster.
+The cluster is managed externally to this architecture (cloud-managed or self-hosted).
+
+.Namespace layout
+[cols="2,4", options="header"]
+|===
+| Namespace | Contents
+
+| `gaia-strapi`
+| Strapi Deployment, PostgreSQL StatefulSet, Service, Ingress
+
+| `gaia-dependency-track`
+| Dependency-Track API Server, Dependency-Track Frontend, PostgreSQL StatefulSet
+
+| `gaia-integration`
+| Stateless integration service Deployments
+
+| `gaia-infra`
+| Shared infrastructure: Traefik (Gateway API), cert-manager, external-secrets (if used)
+|===
+
+== Infrastructure Level 2: Component Deployments
+
+=== Strapi
+
+[cols="2,4", options="header"]
+|===
+| Resource | Description
+
+| `Deployment/strapi`
+| Strapi application server — stateless between restarts (media/uploads on PVC or object storage).
+
+| `StatefulSet/strapi-postgresql`
+| PostgreSQL database for Strapi content and configuration.
+
+| `Service/strapi`
+| ClusterIP service exposing Strapi API within the cluster.
+
+| `HTTPRoute/strapi`
+| Exposes the Strapi API and admin UI via the Traefik Gateway. Governed by a `Gateway` resource in the `gaia-infra` namespace.
+
+| `Secret/strapi-secrets`
+| Database credentials, API tokens, JWT secret. Managed externally to the Helm chart (e.g., Kubernetes Secret or external-secrets operator).
+|===
+
+=== Dependency-Track
+
+[cols="2,4", options="header"]
+|===
+| Resource | Description
+
+| `Deployment/dependencytrack-apiserver`
+| Dependency-Track API server.
+
+| `Deployment/dependencytrack-frontend`
+| Dependency-Track web frontend.
+
+| `StatefulSet/dependencytrack-postgresql`
+| PostgreSQL database for Dependency-Track.
+
+| `Service/dependencytrack`
+| ClusterIP service exposing the Dependency-Track API within the cluster.
+
+| `HTTPRoute/dependencytrack`
+| Exposes the Dependency-Track frontend and API via the Traefik Gateway.
+|===
+
+=== Integration Services
+
+NOTE: Document individual integration service deployments as they are defined. All integration services should be stateless `Deployments` with no local persistence.
+
+== Optional: Traefik and Gateway API Configuration
+
+Project Gaia can be deployed with Traefik as a Gateway API provider. This is the recommended configuration for new deployments.
+
+=== Enabling the Gateway API
+
+To enable this feature, the following values must be set in the Helm chart deployment:
+
+[source,yaml]
+----
+traefik:
+  enabled: true
+
+gatewayApi:
+  enabled: true
+----
+
+When enabled, a `Gateway` resource will be created in the `gaia-infra` namespace, which Traefik uses to manage a load balancer and attach `HTTPRoute` resources.
+
+.Example Gateway Resource
+[source,yaml]
+----
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: gaia-gateway
+  namespace: gaia-infra
+spec:
+  gatewayClassName: traefik
+  listeners:
+  - name: https
+    protocol: HTTPS
+    port: 443
+    tls:
+      mode: Terminate
+      certificateRefs:
+      - name: gaia-tls-cert # Managed by cert-manager
+        kind: Secret
+    allowedRoutes:
+      namespaces:
+        from: Selector
+        selector:
+          matchLabels:
+            kubernetes.io/metadata.name: gaia-strapi, gaia-dependency-track # etc.
+----
+
+Application-level `HTTPRoute` resources (like `strapi` and `dependencytrack`) are defined in their respective Helm charts and attach to this central `Gateway`, which provides a single entry point for all platform traffic.
+
+
+All deployable components are packaged as Helm charts in the `pj-gaia/helm` repository.
+
+----
+helm/
+└── charts/
+    ├── strapi/
+    ├── dependency-track/
+    └── gaia-integration/   ← umbrella or individual service charts
+----

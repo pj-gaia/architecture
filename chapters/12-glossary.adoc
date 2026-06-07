@@ -1,0 +1,63 @@
+[[section-glossary]]
+= Glossary
+
+Key technical and domain terms used throughout this document.
+
+[cols="2,5", options="header"]
+|===
+| Term | Definition
+
+| *ADR*
+| Architecture Decision Record. A short document capturing a significant architecture decision, its context, and its consequences. See <<section-architecture-decisions>>.
+
+| *arc42*
+| A pragmatic, lean template for documenting software and system architectures. See https://arc42.org.
+
+| *SBOM*
+| Software Bill of Materials. A structured, machine-readable inventory of all software components (libraries, frameworks, tools) included in a product, along with their versions and licence information.
+
+| *SCA*
+| Software Composition Analysis. The process of identifying open-source components in a codebase and analysing them for known vulnerabilities and licence compliance issues.
+
+| *CycloneDX*
+| An SBOM standard maintained by OWASP. Widely supported in CI/CD tooling and by Dependency-Track.
+
+| *SPDX*
+| Software Package Data Exchange. An ISO standard (ISO/IEC 5962:2021) for communicating SBOM information, maintained by the Linux Foundation.
+
+| *TARA*
+| Threat Analysis and Risk Assessment. A structured methodology (used in automotive and embedded domains, e.g., ISO/SAE 21434) for identifying assets, threats, risks, and security controls.
+
+| *Quality Gate*
+| A defined threshold or pass/fail criterion applied to a software artefact (e.g., a build or release) that must be satisfied before the artefact proceeds to the next stage of the lifecycle.
+
+| *Dependency-Track*
+| An open-source SBOM analysis platform by OWASP that continuously monitors component vulnerabilities and licence compliance.
+
+| *Strapi*
+| An open-source headless CMS built on Node.js. Used in Project Gaia to manage compliance policies, TARAs, and release metadata via a flexible content model API.
+
+| *Headless CMS*
+| A content management system that stores and manages content but has no built-in frontend. Content is consumed via API by other applications.
+
+| *Helm*
+| A package manager for Kubernetes. Helm charts are templated Kubernetes manifests packaged for reuse and parameterisation.
+
+| *CI/CD*
+| Continuous Integration / Continuous Delivery. Automated pipelines that build, test, and deploy software on every change.
+
+| *NVD*
+| National Vulnerability Database. A U.S. government repository of known software vulnerabilities (CVEs) maintained by NIST. Dependency-Track uses the NVD as one of its vulnerability data sources.
+
+| *CVE*
+| Common Vulnerabilities and Exposures. A standard identifier for publicly known software vulnerabilities.
+
+| *OSS*
+| Open-Source Software. Software whose source code is made publicly available under a licence that permits use, study, modification, and distribution.
+
+| *PoC*
+| Proof of Concept. A limited implementation used to validate that an approach is technically feasible before committing to full development.
+
+| *Compliance Artefact*
+| Any document, record, or data item that provides evidence of conformance with a policy, standard, or regulation (e.g., an SBOM, a TARA, a vulnerability report, a signed-off release checklist).
+|===

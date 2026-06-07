@@ -1,0 +1,43 @@
+[[section-runtime-view]]
+= Runtime View
+
+The runtime view describes the behaviour and interaction of the system's building blocks as runtime instances.
+Selected important use cases or features are documented here as runtime scenarios.
+
+NOTE: Add sequence diagrams (PlantUML or AsciiDoc diagram blocks) for each scenario and place diagram sources/images in the `images/` directory.
+
+== Scenario 1: SBOM Upload from CI/CD Pipeline
+
+This scenario describes the flow triggered when a CI/CD pipeline generates a Software Bill of Materials for a product release and uploads it to the platform.
+
+.SBOM upload flow (placeholder — add sequence diagram)
+----
+1.  CI/CD pipeline completes a build and generates a CycloneDX SBOM.
+2.  Pipeline calls the Dependency-Track API to upload the SBOM for the relevant project and version.
+3.  Dependency-Track ingests the SBOM and begins vulnerability analysis asynchronously.
+4.  Dependency-Track emits a webhook notification when analysis is complete.
+5.  Integration service receives the webhook and queries Dependency-Track for the findings.
+6.  Integration service writes a compliance status summary to Strapi (linked to the release record).
+7.  If findings exceed a configured policy threshold, Integration service triggers a notification.
+----
+
+== Scenario 2: Product Manager Auditing a Release
+
+This scenario describes a Product Manager reviewing the compliance posture of a product release.
+
+.Release audit flow (placeholder — add sequence diagram)
+----
+1.  Product Manager opens the Gaia dashboard (or queries the unified API).
+2.  Integration service queries Strapi for the release record and associated policy status.
+3.  Integration service queries Dependency-Track for the vulnerability summary for that release version.
+4.  Integration service aggregates results into a unified release report.
+5.  Dashboard renders the report: quality gate status, open vulnerabilities, policy compliance.
+----
+
+== Scenario 3: Policy Update and Re-evaluation
+
+NOTE: Document this scenario when the policy management workflow is defined.
+
+== Scenario 4: TARA / Risk Assessment Lifecycle
+
+NOTE: Document this scenario when the TARA content model in Strapi is defined.

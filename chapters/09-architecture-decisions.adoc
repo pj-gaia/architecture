@@ -1,0 +1,107 @@
+[[section-architecture-decisions]]
+= Architecture Decisions
+
+This section documents significant architecture decisions as Architecture Decision Records (ADRs).
+
+The ADR format used is: **context → decision → consequences**.
+
+NOTE: Add a new ADR subsection for each significant architecture decision. Assign sequential IDs (ADR-001, ADR-002, …).
+
+---
+
+== ADR-001: Use Strapi as the Policy and Content Management Platform
+
+=== Status
+Accepted
+
+=== Context
+Project Gaia requires a system for managing structured compliance artefacts: policies, TARAs, and release compliance metadata.
+Options considered:
+
+* Build a custom service with a bespoke data model.
+* Use a relational database with an admin tool (e.g., Adminer, pgAdmin).
+* Use a headless CMS with a flexible content modelling API.
+
+=== Decision
+Use Strapi as the headless CMS for all structured compliance content.
+
+=== Consequences
+* *Positive*: Flexible content types without schema migrations for every new artefact type. Built-in REST and GraphQL APIs. Active OSS community.
+* *Positive*: Admin UI for compliance officers to manage content without engineering involvement.
+* *Negative*: Node.js runtime introduces a separate technology stack.
+* *Negative*: Strapi's content model must be kept in version control (exported schema) to remain auditable.
+
+---
+
+== ADR-002: Use Dependency-Track for SBOM Ingestion and SCA
+
+=== Status
+Accepted
+
+=== Context
+SBOMs must be ingested, analysed against known vulnerability databases, and queried per product version.
+Options considered:
+
+* Build a custom vulnerability scanner.
+* Use Grype / Trivy as a CLI-only scanner without persistent state.
+* Use Dependency-Track as a persistent SBOM store with a vulnerability tracking API.
+
+=== Decision
+Use Dependency-Track as the sole authoritative store for SBOMs and vulnerability findings.
+
+=== Consequences
+* *Positive*: Persistent, queryable SBOM store. Continuous re-analysis as new vulnerability advisories are published.
+* *Positive*: Supports CycloneDX and SPDX; well-integrated with modern CI/CD tooling.
+* *Negative*: Java-based; higher resource footprint than CLI scanners.
+* *Negative*: Requires a dedicated PostgreSQL instance.
+
+---
+
+== ADR-003: Stateless Integration Layer
+
+=== Status
+Accepted
+
+=== Context
+Custom services are needed to bridge OSS tools (event routing, data translation, aggregation).
+The question is whether these services should own persistent state.
+
+=== Decision
+Integration services are stateless. All persistent data lives in the OSS tools (Strapi, Dependency-Track).
+Integration services may use in-process caches with short TTLs but do not own a database.
+
+=== Consequences
+* *Positive*: Simplifies deployment and scaling; no backup/restore responsibility for integration services.
+* *Positive*: Reduces risk of data divergence between OSS tools and integration layer.
+* *Negative*: Some query patterns (e.g., cross-tool aggregation) require fan-out calls at request time, which may affect latency.
+
+---
+
+
+---
+
+== ADR-004: Use Traefik with Kubernetes Gateway API
+
+=== Status
+Accepted
+
+=== Context
+The cluster requires a robust, flexible ingress solution for exposing services to external users.
+The Kubernetes ecosystem is moving from the `v1.Ingress` API to the more expressive and role-oriented `v1.Gateway` API.
+The existing Nginx Ingress Controller is widely used but has a less feature-rich free offering compared to alternatives, and its Ingress-based configuration can become cumbersome for complex routing.
+
+=== Decision
+Use Traefik as the default ingress controller, configured via the Kubernetes Gateway API.
+This will be an optional, but recommended, feature in the Helm chart. The Nginx Ingress Controller will be supported for backward compatibility.
+
+=== Consequences
+* *Positive*: Gateway API provides a standardized, expressive, and role-separated API for managing traffic (GatewayClass, Gateway, HTTPRoute), which improves on the monolithic Ingress resource.
+* *Positive*: Traefik has a strong feature set in its open-source version, including modern protocol support (HTTP/3), middleware (retries, rate limiting), and good observability.
+* *Positive*: Decouples infrastructure (GatewayClass/Gateway) from application routing (HTTPRoute), allowing platform teams and application teams to manage their respective resources independently.
+* *Neutral*: Introduces a new component (Traefik) into the technology stack, which requires operational knowledge.
+* *Negative*: The Gateway API is newer than the Ingress API, and some older Kubernetes tooling may not have full support for it yet.
+
+---
+
+NOTE: Add further ADRs here as architectural decisions are made.
+

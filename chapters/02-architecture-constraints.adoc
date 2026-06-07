@@ -1,0 +1,58 @@
+[[section-architecture-constraints]]
+= Architecture Constraints
+
+Constraints represent organisational or technical decisions that are already fixed and cannot be changed by the architecture.
+They narrow the solution space but often exist for good reasons.
+
+NOTE: Populate this section with constraints agreed upon during project inception. Examples are provided below as a starting point.
+
+== Technical Constraints
+
+[cols="2,4", options="header"]
+|===
+| Constraint | Background / Motivation
+
+| Kubernetes deployment target
+| All components must be deployable on a standard Kubernetes cluster. No dependency on a specific managed cloud vendor is permitted at this stage.
+
+| Helm-based packaging
+| All deployable components must be packaged as Helm charts to enable consistent environment promotion (dev → staging → prod).
+
+| OSS-first component selection
+| New capabilities must first be evaluated as OSS solutions before custom development is considered. Custom code is limited to integration and orchestration layers.
+
+| No persistent data in integration layer
+| The integration services that connect OSS tools must be stateless where possible. Authoritative data lives in the respective OSS tool, not in the integration glue.
+|===
+
+== Organisational Constraints
+
+[cols="2,4", options="header"]
+|===
+| Constraint | Background / Motivation
+
+| Small team operation
+| The platform must be operable without dedicated per-tool administrators. Operational complexity is a first-class constraint.
+
+| Public GitHub organisation (`pj-gaia`)
+| All source code repositories are hosted under the `pj-gaia` GitHub organisation. Architecture documentation and Helm charts are public.
+
+| AsciiDoc for architecture documentation
+| All architecture docs follow the arc42 template in AsciiDoc format to allow rendering via Asciidoctor and inclusion in docs-as-code pipelines.
+|===
+
+== Conventions
+
+[cols="2,4", options="header"]
+|===
+| Convention | Description
+
+| arc42 template
+| Architecture documentation follows the arc42 structure (12 sections). This document is the authoritative architecture reference.
+
+| Semantic versioning
+| All Helm charts and integration services use semantic versioning (`MAJOR.MINOR.PATCH`).
+
+| English as working language
+| All documentation, code comments, and commit messages are written in English.
+|===

@@ -1,0 +1,76 @@
+[[section-system-scope-and-context]]
+= System Scope and Context
+
+System scope and context delimits the system (Project Gaia) from all communication partners (neighbouring systems and users).
+It specifies the external interfaces.
+
+== Business Context
+
+Project Gaia sits at the intersection of the development workflow and the compliance/release process.
+It acts as an integration hub: consuming data produced by engineering tools and presenting a unified view to both engineers and product stakeholders.
+
+NOTE: A context diagram (C4 Context level or arc42 context diagram) should be added here. Place the diagram source or image in the `images/` directory.
+
+.External actors and systems
+[cols="2,2,4", options="header"]
+|===
+| Actor / System | Direction | Description
+
+| Engineer
+| → Gaia
+| Interacts with the platform to review quality gate status, SBOM data, and vulnerability findings for their product components.
+
+| Product Manager
+| → Gaia
+| Audits release quality and compliance posture via consolidated dashboards or reports.
+
+| Source Code Repository (e.g., GitHub / GitLab)
+| → Gaia
+| Triggers pipeline events (push, release, merge request) that initiate SBOM generation and quality checks.
+
+| CI/CD Pipeline
+| → Gaia
+| Uploads SBOM artefacts (CycloneDX / SPDX) to Dependency-Track and triggers policy evaluations in Strapi.
+
+| Dependency-Track
+| ↔ Gaia
+| Receives SBOM data, returns vulnerability analysis and licence compliance findings.
+
+| Strapi
+| ↔ Gaia
+| Provides policy definitions, TARA content, and compliance metadata via its REST / GraphQL API.
+
+| Notification system (e.g., email, Slack)
+| ← Gaia
+| Receives alerts for vulnerability threshold breaches or policy violations.
+|===
+
+== Technical Context
+
+NOTE: Document the technical communication channels and protocols between Project Gaia and its external interfaces here.
+
+.Technical interfaces (placeholder)
+[cols="2,2,2,3", options="header"]
+|===
+| Interface | Protocol | Data Format | Notes
+
+| Dependency-Track API
+| HTTPS / REST
+| JSON, CycloneDX XML/JSON
+| Authentication via API key.
+
+| Strapi API
+| HTTPS / REST or GraphQL
+| JSON
+| Authentication via JWT or API token.
+
+| CI/CD webhook
+| HTTPS
+| JSON (GitHub/GitLab event payload)
+| HMAC signature verification required.
+
+| Kubernetes internal services
+| HTTP (cluster-internal)
+| JSON
+| Communication between integration services within the cluster namespace.
+|===

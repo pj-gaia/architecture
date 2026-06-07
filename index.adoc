@@ -1,0 +1,40 @@
+= Project Gaia: Architecture Documentation
+:toc: left
+:toclevels: 3
+:sectnums:
+:icons: font
+:source-highlighter: highlight.js
+:imagesdir: images
+:revnumber: 0.1
+:revdate: 2026-04-23
+:revremark: Initial scaffold
+:doctype: book
+
+// =====================================================================
+// arc42 architecture documentation template for Project Gaia
+// See https://arc42.org for the full template reference.
+// =====================================================================
+
+include::chapters/01-introduction-and-goals.adoc[leveloffset=+1]
+
+include::chapters/02-architecture-constraints.adoc[leveloffset=+1]
+
+include::chapters/03-system-scope-and-context.adoc[leveloffset=+1]
+
+include::chapters/04-solution-strategy.adoc[leveloffset=+1]
+
+include::chapters/05-building-block-view.adoc[leveloffset=+1]
+
+include::chapters/06-runtime-view.adoc[leveloffset=+1]
+
+include::chapters/07-deployment-view.adoc[leveloffset=+1]
+
+include::chapters/08-crosscutting-concepts.adoc[leveloffset=+1]
+
+include::chapters/09-architecture-decisions.adoc[leveloffset=+1]
+
+include::chapters/10-quality-requirements.adoc[leveloffset=+1]
+
+include::chapters/11-risks-and-technical-debts.adoc[leveloffset=+1]
+
+include::chapters/12-glossary.adoc[leveloffset=+1]

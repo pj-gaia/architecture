@@ -1,0 +1,99 @@
+[[section-quality-requirements]]
+= Quality Requirements
+
+This section concretises the quality goals from <<section-introduction-and-goals>> via measurable quality scenarios.
+
+NOTE: Refine and quantify these scenarios as the platform matures and SLOs are defined.
+
+== Quality Tree
+
+The quality tree provides a structured overview of quality attributes and their refinements.
+
+[cols="2,2,4", options="header"]
+|===
+| Quality Attribute | Refinement | Scenario (see below)
+
+| Traceability
+| Artefact linkage
+| QS-01
+
+| Traceability
+| Audit log completeness
+| QS-02
+
+| Extensibility
+| New tool integration
+| QS-03
+
+| Operability
+| Deployment complexity
+| QS-04
+
+| Security
+| Secrets handling
+| QS-05
+
+| Developer Experience
+| Time to insight
+| QS-06
+|===
+
+== Quality Scenarios
+
+=== QS-01: Artefact Linkage
+
+*Stimulus*: A compliance officer queries the platform for all compliance evidence associated with product release v2.3.1.
+
+*Response*: The platform returns a complete list of linked artefacts: SBOM reference, open vulnerability findings, applicable policies, and TARA references — all scoped to that release version.
+
+*Measure*: All artefacts can be retrieved in a single API response or a documented set of calls; no manual cross-referencing of tools is required.
+
+---
+
+=== QS-02: Audit Log Completeness
+
+*Stimulus*: An auditor requests evidence of when a given policy was last updated and by whom.
+
+*Response*: Strapi version history or an audit log provides a timestamped, attributed record of all changes to the policy content.
+
+*Measure*: The audit trail covers all changes since the policy was first created, with identity of the author and timestamp.
+
+---
+
+=== QS-03: New Tool Integration
+
+*Stimulus*: A new OSS tool (e.g., a static analysis tool) needs to be connected to Project Gaia.
+
+*Response*: An integration service can be developed and deployed that adapts the new tool's API to the existing integration model, without changes to Strapi, Dependency-Track, or any other existing integration service.
+
+*Measure*: Existing integrations continue to function without modification; the new tool is integrated within a documented integration effort.
+
+---
+
+=== QS-04: Deployment Complexity
+
+*Stimulus*: A new environment (e.g., a developer preview environment) needs to be provisioned.
+
+*Response*: The full platform can be deployed to a new Kubernetes namespace using `helm install` with a single environment-specific values file.
+
+*Measure*: A platform engineer unfamiliar with the codebase can provision a working environment within one working day using the documented Helm chart instructions.
+
+---
+
+=== QS-05: Secrets Handling
+
+*Stimulus*: A developer reviews the Helm chart repository.
+
+*Response*: No plaintext credentials, API keys, or secrets are present in any file committed to the repository.
+
+*Measure*: A secret scanning tool (e.g., `git-secrets`, TruffleHog) finds zero secret matches in the repository history.
+
+---
+
+=== QS-06: Time to Insight
+
+*Stimulus*: An engineer wants to know the current vulnerability status of a product component after a new release is published.
+
+*Response*: The engineer can view the vulnerability summary for that release in the platform without navigating directly to Dependency-Track.
+
+*Measure*: Vulnerability status is visible in the platform within 5 minutes of the SBOM being uploaded by the CI/CD pipeline.

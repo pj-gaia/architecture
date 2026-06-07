@@ -1,0 +1,90 @@
+[[section-introduction-and-goals]]
+= Introduction and Goals
+
+This section describes the relevant requirements and the driving forces that architects and the development team must consider.
+It also lists the key quality goals and the relevant stakeholders and their expectations.
+
+== Requirements Overview
+
+Project Gaia is a software lifecycle and compliance toolsuite composed of integrated OSS applications and custom integration services.
+It provides a unified platform for engineering quality assurance and release compliance auditing.
+
+.Core functional requirements
+[cols="1,4", options="header"]
+|===
+| ID | Requirement
+
+| FR-01
+| Engineers can track and review Software Bills of Materials (SBOMs) for all versioned product releases.
+
+| FR-02
+| Engineers are notified of known vulnerabilities in third-party dependencies as part of their existing workflow.
+
+| FR-03
+| Product Managers can view the quality and compliance status of a release from a single consolidated interface.
+
+| FR-04
+| Compliance policies and risk assessments (e.g., TARAs) are version-controlled and auditable.
+
+| FR-05
+| The platform exposes a unified API surface allowing integrations to be added without rewriting existing connections.
+
+| FR-06
+| All data flows between integrated OSS tools are traceable and do not require manual synchronisation.
+|===
+
+== Quality Goals
+
+The top quality goals for the architecture in Priority order.
+
+[cols="1,2,4", options="header"]
+|===
+| Priority | Quality Goal | Motivation
+
+| 1
+| Traceability
+| Every compliance artefact (SBOM, policy, vulnerability finding) must be linkable back to a specific product version and release. This is the core value proposition.
+
+| 2
+| Extensibility
+| New OSS tools must be integrable without breaking existing integrations. The platform is designed as a PoC with an expectation of growth.
+
+| 3
+| Operability
+| The platform must be deployable and maintainable by a small team on Kubernetes without requiring specialist expertise per tool.
+
+| 4
+| Security
+| Credentials, tokens, and secrets must not be embedded in configuration. All inter-service communication should be authenticated.
+
+| 5
+| Developer Experience
+| Engineers should experience the platform as a single coherent tool, not a collection of loosely connected dashboards.
+|===
+
+== Stakeholders
+
+[cols="2,2,4", options="header"]
+|===
+| Role | Contact / Representation | Expectations
+
+| Product Manager
+| Release approval owners
+| Can audit any release for quality gate status and compliance posture without access to individual engineering tools.
+
+| Software Engineer
+| Development teams
+| Single source of truth for quality gates; automated notifications on dependency vulnerabilities and policy violations.
+
+| Security / Compliance Officer
+| Compliance function
+| Auditable, version-controlled policies with traceable evidence linking requirements to release artefacts.
+
+| Platform / DevOps Engineer
+| Infrastructure team
+| Kubernetes-native deployment with Helm; each component operable independently.
+
+| Architecture Board
+| Technical leadership
+| Clear separation between OSS components and integration glue; low vendor lock-in; documented decision rationale.
+|===

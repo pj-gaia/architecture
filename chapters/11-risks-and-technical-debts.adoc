@@ -1,0 +1,70 @@
+[[section-risks]]
+= Risks and Technical Debts
+
+This section lists identified technical risks and technical debt items, along with mitigation strategies.
+
+NOTE: Review and update this section at the end of each significant development increment.
+
+== Risks
+
+[cols="1,2,1,3,3", options="header"]
+|===
+| ID | Risk | Likelihood | Impact | Mitigation
+
+| R-01
+| Strapi major version upgrade breaks content model API compatibility
+| Medium
+| High — content and policy data may become inaccessible
+| Pin Strapi to a tested major version in the Helm chart. Document upgrade path. Accept and plan upgrade effort before deprecation.
+
+| R-02
+| Dependency-Track NVD feed synchronisation rate-limiting in CI-heavy environments
+| Medium
+| Medium — vulnerability data may be stale during peak CI activity
+| Use Dependency-Track's internal mirror/cache. Consider a dedicated NVD API key for higher rate limits.
+
+| R-03
+| Integration services become a source of truth (state creep)
+| Low (currently)
+| High — violates the stateless constraint and introduces data consistency problems
+| Enforce the stateless constraint via code review. Any proposed state in integration services triggers an ADR review.
+
+| R-04
+| Single Kubernetes cluster is a single point of failure for the PoC
+| Low
+| Medium — full platform outage
+| Acceptable for PoC scope. Document as a known limitation. Multi-cluster topology is a post-PoC concern.
+
+| R-05
+| Insufficient observability during PoC makes debugging integrations slow
+| High
+| Low–Medium — slows development, does not affect correctness
+| Implement structured logging and `/healthz` endpoints as MVP. Add Prometheus metrics before first external demo.
+|===
+
+== Technical Debts
+
+[cols="1,3,2,2", options="header"]
+|===
+| ID | Description | Severity | Planned Resolution
+
+| TD-01
+| No automated integration tests between Strapi and Dependency-Track integration services
+| Medium
+| Address before first non-PoC deployment. Write contract tests using a test harness against running instances.
+
+| TD-02
+| Helm chart secrets injected via environment variables — no external-secrets operator integration
+| Low (PoC acceptable)
+| Introduce external-secrets or Vault integration before production deployment.
+
+| TD-03
+| Strapi content model schema (content types) is not version-controlled as code
+| Medium
+| Export and commit Strapi content type definitions as code. Automate export as part of CI.
+
+| TD-04
+| No unified API gateway — consumers call integration services directly
+| Low (PoC acceptable)
+| Evaluate adding an API gateway (e.g., Kong, Traefik middleware) for routing, rate limiting, and auth consolidation before production.
+|===

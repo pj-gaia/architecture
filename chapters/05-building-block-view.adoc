@@ -1,0 +1,119 @@
+[[section-building-block-view]]
+= Building Block View
+
+The building block view shows the static decomposition of Project Gaia into building blocks (modules, components, subsystems) and their dependencies.
+
+NOTE: Diagrams for each level should be added in the `images/` directory and referenced here. Use C4 Component diagrams or UML component diagrams as appropriate.
+
+== Whitebox: Overall System
+
+NOTE: Add a whitebox diagram of the top-level decomposition here.
+
+The top-level building blocks of Project Gaia are:
+
+[cols="2,4", options="header"]
+|===
+| Building Block | Responsibility
+
+| *Strapi*
+| Headless CMS providing content models for policies, TARAs, and compliance metadata. Exposes REST and GraphQL APIs.
+
+| *Dependency-Track*
+| SBOM ingestion, vulnerability analysis, and licence compliance. Receives CycloneDX/SPDX artefacts from CI/CD pipelines.
+
+| *Integration Services*
+| Custom lightweight services that handle event routing, data translation, and cross-tool aggregation. Stateless.
+
+| *Kubernetes Infrastructure*
+| Cluster providing workload isolation, networking, secret management, and service discovery for all components.
+|===
+
+=== Strapi (Policy & Content Management)
+
+[cols="1,3", options="header"]
+|===
+| Attribute | Value
+
+| Purpose
+| Manages structured compliance data: policies, risk assessments (TARAs), and release metadata.
+
+| Interfaces
+| REST API, GraphQL API, Webhook outbound events
+
+| Technology
+| Node.js / Strapi v5, PostgreSQL (persistence)
+
+| Helm chart
+| `helm/charts/strapi`
+|===
+
+=== Dependency-Track (SBOM & SCA)
+
+[cols="1,3", options="header"]
+|===
+| Attribute | Value
+
+| Purpose
+| Ingests SBOMs from CI pipelines and provides vulnerability and licence findings.
+
+| Interfaces
+| REST API (inbound SBOM upload, outbound findings query), webhook notifications
+
+| Technology
+| Java / Dependency-Track, PostgreSQL (persistence)
+
+| Helm chart
+| `helm/charts/dependency-track`
+|===
+
+=== Integration Services
+
+NOTE: Decompose individual integration services here as they are defined. Each service should have its own subsection.
+
+Integration services are thin stateless adapters. No business logic.
+
+=== Networking (Ingress)
+
+The networking layer is responsible for routing external traffic to the appropriate services within the cluster.
+
+[cols="1,3", options="header"]
+|===
+| Attribute | Value
+
+| Purpose
+| Provides a stable, secure entry point for HTTP/S traffic, with TLS termination and path-based routing.
+
+| Interfaces
+| HTTP/S (ports 80, 443)
+
+| Technology
+| Traefik Proxy with Kubernetes Gateway API (`Gateway`, `HTTPRoute`)
+
+| Helm chart
+| `helm/charts/traefik` (as a dependency or standalone)
+|===
+
+[mermaid]
+....
+C4Container
+    title Container diagram for Project Gaia
+
+    Person(user, "User", "A user of Project Gaia")
+
+    System_Boundary(cluster, "Kubernetes Cluster") {
+        Container(traefik, "Traefik", "Gateway API", "Routes external traffic to internal services")
+        Container(strapi, "Strapi", "Node.js, PostgreSQL", "Headless CMS for compliance data")
+        Container(dtrack, "Dependency-Track", "Java, PostgreSQL", "SBOM and vulnerability analysis")
+        Container(isvc, "Integration Services", "Go", "Stateless adapters and aggregators")
+    }
+
+    Rel(user, traefik, "Uses", "HTTPS")
+    Rel(traefik, strapi, "Routes to", "HTTPS")
+    Rel(traefik, dtrack, "Routes to", "HTTPS")
+    Rel(traefik, isvc, "Routes to", "HTTPS")
+....
+
+
+== Level 2 Building Blocks
+
+NOTE: Add level 2 decomposition of individual integration services here when their design is finalised.

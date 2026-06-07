@@ -1,0 +1,72 @@
+[[section-solution-strategy]]
+= Solution Strategy
+
+A short summary of the fundamental decisions and solution strategies that shape the overall architecture.
+
+== Fundamental Decisions
+
+=== OSS-First, Integration-Second
+
+All platform capabilities are built on existing OSS tools.
+Custom development is confined to thin integration and orchestration layers whose sole responsibility is to make OSS tools speak to each other.
+This limits long-term maintenance burden and keeps the platform transparent and auditable.
+
+=== Kubernetes-Native Deployment
+
+The entire platform runs on Kubernetes.
+Each OSS component is deployed as an independent workload with its own Helm chart.
+This enables:
+
+* Independent scaling and lifecycle management per component.
+* Environment promotion (dev → staging → prod) via Helm values overrides.
+* A clear separation between stateful data stores and stateless integration services.
+
+=== Strapi as the Policy and Content Hub
+
+Strapi is selected as the headless CMS / content platform for managing:
+
+* Compliance policies (versioned, auditable).
+* Risk management artefacts (TARAs and similar structured risk assessments).
+* Metadata that links releases to their compliance evidence.
+
+Strapi's flexible content modelling and REST/GraphQL API surface make it suitable as the authoritative store for structured compliance data without requiring a bespoke database schema.
+
+=== Dependency-Track for SBOM and SCA
+
+Dependency-Track is the authoritative system for:
+
+* Ingesting CycloneDX and SPDX Software Bills of Materials from CI/CD pipelines.
+* Tracking known vulnerabilities (NVD, OSV, GitHub Advisory) across all product dependencies.
+* Licence compliance analysis.
+
+It is a passive receiver of SBOMs pushed from CI/CD and an active source of vulnerability findings that the integration layer aggregates.
+
+=== Thin Integration Layer
+
+Custom services within Project Gaia act as adapters and aggregators only.
+They must not own business logic that belongs to an OSS tool.
+Their responsibilities are limited to:
+
+* Receiving events from external systems (webhooks).
+* Translating data between tool formats.
+* Exposing a unified API for the frontend/dashboard layer.
+
+=== Proof-of-Concept Scope
+
+The current scope is a PoC to validate the integration model.
+Feature completeness is secondary to demonstrating that the tools can be composed into a coherent platform.
+Decisions made in the PoC phase are documented as ADRs (see <<section-architecture-decisions>>) to ensure they can be revisited.
+
+== Modern Kubernetes Networking with Traefik and Gateway API
+
+To expose services, Project Gaia adopts the Kubernetes Gateway API, with Traefik as the default implementation.
+This choice provides a more flexible, role-oriented, and feature-rich approach to traffic management than the traditional Ingress API.
+
+Key benefits include:
+
+* **Standardized API**: The Gateway API is a Kubernetes-standard, portable API for traffic routing.
+* **Role Separation**: Infrastructure operators can manage `Gateway` resources, while application developers manage `HTTPRoute` resources, leading to clearer separation of concerns.
+* **Expressive Routing**: The API supports advanced traffic management features like traffic splitting, header-based routing, and middleware integration natively.
+
+This approach is documented in <<ADR-004>>.
+

@@ -1,0 +1,59 @@
+[[section-concepts]]
+= Cross-cutting Concepts
+
+Cross-cutting concepts are general principles and solution approaches relevant to multiple parts of the architecture.
+They are not specific to a single building block.
+
+NOTE: Expand each concept with concrete implementation decisions as they are established.
+
+== Security
+
+=== Secrets Management
+
+No secrets (API keys, database passwords, JWT secrets) are stored in Helm chart `values.yaml` files or in Git.
+Secrets are injected at deploy time via one of:
+
+* Kubernetes `Secret` resources managed outside the chart (referenced by `secretKeyRef`).
+* An external-secrets operator integration (future).
+
+=== Authentication Between Services
+
+* Strapi: API access via API token or JWT (short-lived, environment-specific).
+* Dependency-Track: API key per consuming service.
+* Integration services authenticate to OSS tools using environment-injected credentials.
+* All external-facing services use TLS (managed via cert-manager).
+
+=== Least-Privilege Principle
+
+Each Kubernetes workload runs with the minimum required RBAC permissions.
+Service accounts are per-component with no cross-namespace cluster-admin bindings.
+
+== Observability
+
+NOTE: Define concrete observability tooling (metrics, logs, traces) when the infrastructure stack is decided.
+
+* Structured JSON logging from all custom integration services.
+* Health check endpoints (`/healthz`, `/readyz`) on all custom services.
+* Prometheus metrics exposure to be added when a monitoring stack is deployed.
+
+== Error Handling & Resilience
+
+* Integration services must degrade gracefully when a downstream OSS tool is unavailable (circuit breaker pattern or retry with backoff).
+* No data loss: if an integration service cannot deliver an event, it should fail in an observable way (log + metric) rather than silently discard data.
+
+== Configuration Management
+
+* All component configuration is externalised via environment variables or Kubernetes `ConfigMap` resources.
+* Per-environment configuration is managed via Helm values files (e.g., `values-dev.yaml`, `values-prod.yaml`).
+
+== Data Consistency
+
+* The integration layer does not own the source of truth for any domain entity.
+* Strapi owns policy and compliance metadata.
+* Dependency-Track owns SBOM and vulnerability data.
+* Integration services may cache or aggregate data for presentation but must treat OSS tool data as authoritative.
+
+== Upgrade Strategy
+
+* OSS components are upgraded by updating the image tag in the Helm chart and verifying against the component's upgrade guide.
+* Integration services follow semantic versioning; breaking changes require a major version bump.
