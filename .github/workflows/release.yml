@@ -23,31 +23,44 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Build HTML
-        uses: asciidoctor/asciidoctor-action@v2
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
         with:
-          source_dir: .
-          source_file: index.adoc
-          destination_dir: ./build/html
-          backend: html5
-          safe: unsafe
-          attributes: |
-            imagesdir=./images
-            kroki-fetch-diagram=true
-            kroki-server-url=https://kroki.io
+          ruby-version: '3.1' # Or your preferred version
+
+      - name: Install Asciidoctor and dependencies
+        run: |
+          gem install asciidoctor
+          gem install asciidoctor-pdf
+          gem install asciidoctor-kroki
+
+      - name: Create build directories
+        run: |
+          mkdir -p build/html
+          mkdir -p build/pdf
+
+      - name: Build HTML
+        run: |
+          asciidoctor \
+            -r asciidoctor-kroki \
+            -b html5 \
+            -d book \
+            -a imagesdir=./images \
+            -a kroki-fetch-diagram=true \
+            -a kroki-server-url=https://kroki.io \
+            -D build/html \
+            index.adoc
 
       - name: Build PDF
-        uses: asciidoctor/asciidoctor-action@v2
-        with:
-          source_dir: .
-          source_file: index.adoc
-          destination_dir: ./build/pdf
-          backend: pdf
-          safe: unsafe
-          attributes: |
-            imagesdir=./images
-            kroki-fetch-diagram=true
-            kroki-server-url=https://kroki.io
+        run: |
+          asciidoctor-pdf \
+            -r asciidoctor-kroki \
+            -d book \
+            -a imagesdir=./images \
+            -a kroki-fetch-diagram=true \
+            -a kroki-server-url=https://kroki.io \
+            -D build/pdf \
+            index.adoc
 
       - name: Upload HTML artifact
         uses: actions/upload-artifact@v4
