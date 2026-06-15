@@ -43,7 +43,7 @@ The top quality goals for the architecture in Priority order.
 
 | 1
 | Traceability
-| Every compliance artefact (SBOM, policy, vulnerability finding) must be linkable back to a specific product version and release. This is the core value proposition.
+| Every compliance artifact (SBOM, policy, vulnerability finding) must be linkable back to a specific product version and release. This is the core value proposition.
 
 | 2
 | Extensibility

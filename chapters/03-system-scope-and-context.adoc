@@ -9,7 +9,22 @@ It specifies the external interfaces.
 Project Gaia sits at the intersection of the development workflow and the compliance/release process.
 It acts as an integration hub: consuming data produced by engineering tools and presenting a unified view to both engineers and product stakeholders.
 
-NOTE: A context diagram (C4 Context level or arc42 context diagram) should be added here. Place the diagram source or image in the `images/` directory.
+.Business Context
+[mermaid, target="system-context-diagram", format="svg"]
+....
+mindmap
+    root((Project Gaia))
+        Users
+            Product Manager
+            Engineer
+            Quality Manager
+            Compliance Officer
+        Software Composition Analysis Tools
+            Bill of Materials
+            Vulnerability Databases
+        SAST Tools
+        Pipelines
+....
 
 .External actors and systems
 [cols="2,2,4", options="header"]
@@ -17,60 +32,74 @@ NOTE: A context diagram (C4 Context level or arc42 context diagram) should be ad
 | Actor / System | Direction | Description
 
 | Engineer
-| → Gaia
+| ↔ Gaia
 | Interacts with the platform to review quality gate status, SBOM data, and vulnerability findings for their product components.
 
 | Product Manager
-| → Gaia
+| ↔ Gaia
 | Audits release quality and compliance posture via consolidated dashboards or reports.
 
-| Source Code Repository (e.g., GitHub / GitLab)
-| → Gaia
-| Triggers pipeline events (push, release, merge request) that initiate SBOM generation and quality checks.
-
-| CI/CD Pipeline
-| → Gaia
-| Uploads SBOM artefacts (CycloneDX / SPDX) to Dependency-Track and triggers policy evaluations in Strapi.
-
-| Dependency-Track
+| Quality Manager
 | ↔ Gaia
-| Receives SBOM data, returns vulnerability analysis and licence compliance findings.
+| Verifies that release candidates satisfy internal quality requirements and evidence is complete.
 
-| Strapi
+| Compliance Officer
 | ↔ Gaia
-| Provides policy definitions, TARA content, and compliance metadata via its REST / GraphQL API.
+| Reviews policy conformance and risk posture based on consolidated artefacts and findings.
 
-| Notification system (e.g., email, Slack)
-| ← Gaia
-| Receives alerts for vulnerability threshold breaches or policy violations.
+| Pipelines
+| → Gaia
+| Provides build and release events and delivers generated analysis artefacts for evaluation.
+
+| SAST Tools
+| → Gaia
+| Contributes static analysis findings that are correlated with product and release context.
+
+| Software Composition Analysis Tools
+| → Gaia
+| Supplies software composition analysis evidence, including SBOM artefacts (for example CycloneDX or SPDX) and vulnerability intelligence used to assess component risk.
 |===
 
 == Technical Context
 
-NOTE: Document the technical communication channels and protocols between Project Gaia and its external interfaces here.
+.Technical Context
+[mermaid, target="system-context-diagram-technical", format="svg"]
+....
+flowchart TD
+    users[Users]
+    gaia[Project Gaia]
+    pipelines[Pipelines]
+    sast_tools[SAST Tools]
+    sca[SCA Tools]
+    
+    users -->|REST| gaia
+    pipelines -->|Webhook| gaia
+    sast_tools -->|REST| gaia
+    sca -->|REST / Webhook| gaia
+....
 
-.Technical interfaces (placeholder)
+.Technical interfaces
 [cols="2,2,2,3", options="header"]
 |===
 | Interface | Protocol | Data Format | Notes
 
-| Dependency-Track API
+| User web application
 | HTTPS / REST
-| JSON, CycloneDX XML/JSON
-| Authentication via API key.
+| HTML, CSS, JavaScript, JSON
+| Used by Engineer, Product Manager, Quality Manager, and Compliance Officer to review status and evidence.
 
-| Strapi API
-| HTTPS / REST or GraphQL
+| Pipeline integration endpoint
+| HTTPS / Webhook
 | JSON
-| Authentication via JWT or API token.
+| Receives build/release events and references to generated artefacts.
 
-| CI/CD webhook
-| HTTPS
-| JSON (GitHub/GitLab event payload)
-| HMAC signature verification required.
+| SAST tool integration
+| HTTPS / REST
+| JSON (findings payload)
+| Tool-specific authentication (API token/OAuth2) and source signature validation where supported.
 
-| Kubernetes internal services
-| HTTP (cluster-internal)
-| JSON
-| Communication between integration services within the cluster namespace.
+| SCA tool integration
+| HTTPS / REST or Webhook
+| CycloneDX or SPDX (JSON/XML), JSON
+| Receives software composition analysis data, including SBOM documents and vulnerability information, from integrated SCA tooling.
 |===

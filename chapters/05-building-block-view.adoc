@@ -3,11 +3,26 @@
 
 The building block view shows the static decomposition of Project Gaia into building blocks (modules, components, subsystems) and their dependencies.
 
-NOTE: Diagrams for each level should be added in the `images/` directory and referenced here. Use C4 Component diagrams or UML component diagrams as appropriate.
-
 == Whitebox: Overall System
 
-NOTE: Add a whitebox diagram of the top-level decomposition here.
+[mermaid, target="building-block-overview", format="svg"]
+....
+flowchart LR
+    subgraph Gaia
+        Registry
+        Orchestrator
+        Controller
+
+        Controller --> Registry
+        Orchestrator --> Registry
+    end
+
+    Users --> Controller
+    SCA --> Orchestrator
+    SAST --> Orchestrator
+    Pipelines --> Orchestrator
+
+....
 
 The top-level building blocks of Project Gaia are:
 
@@ -93,27 +108,11 @@ The networking layer is responsible for routing external traffic to the appropri
 | `helm/charts/traefik` (as a dependency or standalone)
 |===
 
-[mermaid]
-....
-C4Container
-    title Container diagram for Project Gaia
-
-    Person(user, "User", "A user of Project Gaia")
-
-    System_Boundary(cluster, "Kubernetes Cluster") {
-        Container(traefik, "Traefik", "Gateway API", "Routes external traffic to internal services")
-        Container(strapi, "Strapi", "Node.js, PostgreSQL", "Headless CMS for compliance data")
-        Container(dtrack, "Dependency-Track", "Java, PostgreSQL", "SBOM and vulnerability analysis")
-        Container(isvc, "Integration Services", "Go", "Stateless adapters and aggregators")
-    }
-
-    Rel(user, traefik, "Uses", "HTTPS")
-    Rel(traefik, strapi, "Routes to", "HTTPS")
-    Rel(traefik, dtrack, "Routes to", "HTTPS")
-    Rel(traefik, isvc, "Routes to", "HTTPS")
-....
-
 
 == Level 2 Building Blocks
 
-NOTE: Add level 2 decomposition of individual integration services here when their design is finalised.
+=== Registry
+
+=== Orchestrator
+
+=== Controller

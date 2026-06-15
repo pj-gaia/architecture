@@ -4,40 +4,132 @@
 The runtime view describes the behaviour and interaction of the system's building blocks as runtime instances.
 Selected important use cases or features are documented here as runtime scenarios.
 
-NOTE: Add sequence diagrams (PlantUML or AsciiDoc diagram blocks) for each scenario and place diagram sources/images in the `images/` directory.
+== Process Lifecycle
 
-== Scenario 1: SBOM Upload from CI/CD Pipeline
+Whenever a new Product is created in the system, a process lifecycle is initiated to define how the product will be developed, released and maintained. The lifecycle is represented as a state machine with the following states:
 
-This scenario describes the flow triggered when a CI/CD pipeline generates a Software Bill of Materials for a product release and uploads it to the platform.
+[mermaid, target="product-lifecycle-diagram", format="svg"]
+....
+stateDiagram-v2
+    [*] --> Draft
+    Draft --> Submitted
+    Submitted --> Review
+    Review --> Approved
+    Review --> Rejected
+    Rejected --> Draft
+    Approved --> [*]
+    Approved --> Superseded
+    Superseded --> [*]
+....
 
-.SBOM upload flow (placeholder — add sequence diagram)
-----
-1.  CI/CD pipeline completes a build and generates a CycloneDX SBOM.
-2.  Pipeline calls the Dependency-Track API to upload the SBOM for the relevant project and version.
-3.  Dependency-Track ingests the SBOM and begins vulnerability analysis asynchronously.
-4.  Dependency-Track emits a webhook notification when analysis is complete.
-5.  Integration service receives the webhook and queries Dependency-Track for the findings.
-6.  Integration service writes a compliance status summary to Strapi (linked to the release record).
-7.  If findings exceed a configured policy threshold, Integration service triggers a notification.
-----
+.Process lifecycle States
+[cols="1,2,1", options="header"]
+|===
+| State 
+| Description
+| Responsible Actors
 
-== Scenario 2: Product Manager Auditing a Release
+| Draft
+| Initial state when a new product is created and a development process is yet to be defined. In this state, the product record is editable.
+| Product Manager, Engineer
 
-This scenario describes a Product Manager reviewing the compliance posture of a product release.
+| Submitted
+| Indicates that the process has been formally submitted for review. In this state, the record is locked for editing and awaits evaluation against defined policies.
+| Product Manager
 
-.Release audit flow (placeholder — add sequence diagram)
-----
-1.  Product Manager opens the Gaia dashboard (or queries the unified API).
-2.  Integration service queries Strapi for the release record and associated policy status.
-3.  Integration service queries Dependency-Track for the vulnerability summary for that release version.
-4.  Integration service aggregates results into a unified release report.
-5.  Dashboard renders the report: quality gate status, open vulnerabilities, policy compliance.
-----
+| Review
+| Active state during the evaluation process. The system aggregates evidence, applies policies, and determines compliance status. The outcome of this state is either Approved or Rejected based on the defined criteria.
+| Quality Manager, Compliance Officer
 
-== Scenario 3: Policy Update and Re-evaluation
+| Approved
+| Indicates that the process has successfully met all policy requirements and that development of the product can start. In this state, the record is locked and serves as an official record of compliance for that release version.
+| Product Manager
 
-NOTE: Document this scenario when the policy management workflow is defined.
+| Rejected
+| Indicates that the process has failed to meet one or more of the policy requirements. In this state, the record is locked and requires corrective action before it can be resubmitted for review.
+| Product Manager
 
-== Scenario 4: TARA / Risk Assessment Lifecycle
+| Superseded
+| Indicates that the product release has been superseded by a newer release. In this state, the record is archived and serves as historical reference.
+| Product Manager
+|===
 
-NOTE: Document this scenario when the TARA content model in Strapi is defined.
+== Product Lifecycle
+
+[mermaid, target="product-lifecycle-sequence-diagram", format="svg"]
+....
+stateDiagram-v2
+    [*] --> Planning
+    Planning --> Development
+    Development --> Operational
+    Operational --> Sunset
+    Sunset --> Decommissioned
+    Decommissioned --> [*]
+....
+
+.Product lifecycle States
+[cols="1,2", options="header"]
+|===
+| State
+| Description
+
+| Planning
+| The product is in the planning phase where requirements are gathered, and the development process is defined. No active development occurs in this state.
+
+| Development
+| The product is actively being developed. Code is being written, and artefacts such as SBOMs are generated. The product is not yet released to customers.
+
+| Operational
+| The product is released and operational. Users can interact with the product, and it is monitored for performance, reliability, and security.
+
+| Sunset
+| The product is in the process of being retired. No new features are developed, and support is gradually reduced until the product is fully decommissioned.
+
+| Decommissioned
+| The product is fully retired and no longer supported. It may still be accessible for historical reference, but it is not actively maintained or used in production.
+|===
+
+
+== Release Lifecycle
+
+[mermaid, target="release-lifecycle-sequence-diagram", format="svg"]
+....
+stateDiagram-v2
+    [*] --> Staged
+    Staged --> Analyzing
+    Analyzing --> Passed
+    Analyzing --> Failed
+    Failed --> Staged
+    Passed --> Released
+    Released --> Deployed
+    Deployed --> Retired
+    Retired --> [*]
+....
+
+.Release lifecycle States
+[cols="1,2", options="header"]
+|===
+| State
+| Description
+
+| Staged
+| A release candidate is created and staged for analysis. In this state, the release is not yet evaluated against policies, and no compliance status is assigned.
+
+| Analyzing
+| The release is actively being analyzed. The system aggregates evidence from various sources (for example, SBOMs, SAST findings) and applies policies to determine compliance status.
+
+| Passed
+| The release has successfully passed all policy checks and is compliant. It is ready for release to customers.
+
+| Failed
+| The release has failed one or more policy checks and is not compliant. It requires corrective action before it can be resubmitted for analysis.
+
+| Released
+| The release has been officially released to customers. It is compliant and meets all policy requirements. 
+
+| Deployed
+| The release is deployed to production environments. It is monitored for performance, reliability, and security.
+
+| Retired
+| The release is retired and no longer supported. It may still be accessible for historical reference, but it is not actively maintained or used in production.
+|===
