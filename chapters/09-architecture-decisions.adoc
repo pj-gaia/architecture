@@ -105,3 +105,31 @@ This will be an optional, but recommended, feature in the Helm chart. The Nginx 
 
 NOTE: Add further ADRs here as architectural decisions are made.
 
+---
+
+== ADR-005: Use TanStack Router and TanStack Query in Controller UI
+
+=== Status
+Accepted
+
+=== Context
+The Controller frontend needs predictable route-driven navigation and resilient data-fetching behavior for registry-backed screens such as the Product Catalog.
+The initial implementation used route files from TanStack Router but product data was loaded with local `fetch` + `useEffect` state management.
+This caused duplicated loading/error state logic and made cache/retry behavior inconsistent across views.
+
+=== Decision
+Use TanStack Router for file-based SPA routing and TanStack Query for server-state fetching/caching in the Controller UI.
+
+For the Product Catalog flow:
+
+* Route navigation uses TanStack Router `Link` components and file routes (`/products`, `/products/$productId`).
+* Product data is loaded via a dedicated `useProducts` hook backed by TanStack Query.
+* `QueryClientProvider` is configured at the Controller app shell/root level.
+
+=== Consequences
+* *Positive*: Unified loading/error/data lifecycle for product views.
+* *Positive*: Built-in caching, stale state handling, and retry support for registry API calls.
+* *Positive*: SPA navigation consistency and route-safe parameter handling.
+* *Negative*: Adds dependency on TanStack Query and app-level provider wiring.
+* *Negative*: Team must align on query keys and invalidation conventions.
+
