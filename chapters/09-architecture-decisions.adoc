@@ -113,21 +113,19 @@ NOTE: Add further ADRs here as architectural decisions are made.
 Accepted
 
 === Context
-The Controller frontend needs predictable route-driven navigation and resilient data-fetching behavior for registry-backed screens such as the Product Catalog.
-The initial implementation used route files from TanStack Router but product data was loaded with local `fetch` + `useEffect` state management.
-This caused duplicated loading/error state logic and made cache/retry behavior inconsistent across views.
+The Controller frontend is a single-page application that needs a consistent approach for client-side routing and server-state management.
+Using ad-hoc `fetch` + local component state for server data leads to duplicated loading/error logic, inconsistent caching behavior, and weaker conventions across screens.
+The architecture requires a common frontend pattern that can be applied across current and future UI features.
 
 === Decision
 Use TanStack Router for file-based SPA routing and TanStack Query for server-state fetching/caching in the Controller UI.
 
-For the Product Catalog flow:
-
-* Route navigation uses TanStack Router `Link` components and file routes (`/products`, `/products/$productId`).
-* Product data is loaded via a dedicated `useProducts` hook backed by TanStack Query.
-* `QueryClientProvider` is configured at the Controller app shell/root level.
+* TanStack Router defines route structure and typed navigation for controller pages.
+* TanStack Query is used for server data access, caching, and background refetch behavior.
+* Query client/provider configuration is centralized at the app shell/root level.
 
 === Consequences
-* *Positive*: Unified loading/error/data lifecycle for product views.
+* *Positive*: Unified loading/error/data lifecycle for frontend server-state interactions.
 * *Positive*: Built-in caching, stale state handling, and retry support for registry API calls.
 * *Positive*: SPA navigation consistency and route-safe parameter handling.
 * *Negative*: Adds dependency on TanStack Query and app-level provider wiring.
