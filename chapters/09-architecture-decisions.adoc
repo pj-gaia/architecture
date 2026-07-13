@@ -113,23 +113,22 @@ NOTE: Add further ADRs here as architectural decisions are made.
 Accepted
 
 === Context
-The Controller frontend needs predictable route-driven navigation and resilient data-fetching behavior for registry-backed screens such as the Product Catalog.
-The initial implementation used route files from TanStack Router but product data was loaded with local `fetch` + `useEffect` state management.
-This caused duplicated loading/error state logic and made cache/retry behavior inconsistent across views.
+The Controller frontend requires a consistent approach for client-side navigation and server-state data handling across all screens.
+Ad-hoc `fetch` + local component state patterns lead to duplicated loading/error logic, inconsistent caching behavior, and non-uniform data access conventions.
+Options considered:
+
+* Continue with native `fetch` + per-component state management.
+* Adopt a router-only standard while keeping custom data-fetching logic.
+* Adopt a unified standard for both routing and server-state management.
 
 === Decision
-Use TanStack Router for file-based SPA routing and TanStack Query for server-state fetching/caching in the Controller UI.
-
-For the Product Catalog flow:
-
-* Route navigation uses TanStack Router `Link` components and file routes (`/products`, `/products/$productId`).
-* Product data is loaded via a dedicated `useProducts` hook backed by TanStack Query.
-* `QueryClientProvider` is configured at the Controller app shell/root level.
+Use TanStack Router for frontend routing and TanStack Query for server-state management in the Controller UI.
+Query client/provider configuration is centralized at the application root.
 
 === Consequences
-* *Positive*: Unified loading/error/data lifecycle for product views.
-* *Positive*: Built-in caching, stale state handling, and retry support for registry API calls.
-* *Positive*: SPA navigation consistency and route-safe parameter handling.
+* *Positive*: Standardized navigation model and route composition across frontend features.
+* *Positive*: Unified loading/error/data lifecycle for server-state interactions.
+* *Positive*: Built-in caching, stale state handling, and retry behavior for backend API calls.
 * *Negative*: Adds dependency on TanStack Query and app-level provider wiring.
 * *Negative*: Team must align on query keys and invalidation conventions.
 
